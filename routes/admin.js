@@ -4,7 +4,7 @@ const mongoose = require("mongoose")
 require("../models/Categoria")//importando o model para ser usado
 const Categoria = mongoose.model("categorias") //passando o valor do model para uma variavel
 
-router.get('/', (req, res) =>{
+router.get('/', (req, res) => {
     res.render("admin/index")
 })
 
@@ -13,7 +13,13 @@ router.get('/posts', (req, res) => {
 })
 
 router.get('/categorias', (req, res) => {
-    res.render("admin/categorias")
+    Categoria.find().sort({date:'desc'}).then((categorias) => {
+        res.render("admin/categorias", {categorias: categorias})
+    }).catch((erro) => {
+        req.flash("msg_error", "houve um erro ao listar as categorias")
+        res.redirect("/admin")
+    })
+    
 })
 
 router.get('/categorias/add', (req, res) => {
@@ -21,18 +27,44 @@ router.get('/categorias/add', (req, res) => {
 })
 
 router.post('/categorias/nova', (req, res) => {
-    const novaCategoria = { //requisitando os dados da página colocado nos inputs e criando um objeto
-        nome: req.body.nome,
-        slug: req.body.slug
+
+    var erros = []
+    //se não for enviado um nome, ou for não definido ou for nulo
+    if (!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        //se não for enviado um nome, ou for não definido ou for nulo
+        erros.push({ texto: "nome inválido" })
+
+    }
+    //se não for enviado um slug, ou for não definido ou for nulo
+    if (!req.body.slug || typeof req.body.slug == undefined || req.body.slug == null) {
+        erros.push({ texto: "Slug inválido" })
     }
 
-    new Categoria(novaCategoria).save().then(() => {
-        console.log("categoria salva com sucesso!")
-    }).catch((erro) => {
-        console.log("não foi possível salvar a categoria" + erro)
-    })
+    if (req.body.nome.length < 2) {
+        erros.push({ texto: "Nome da categoria é muito pequeno" })
+    }
 
- })
+    if (erros.length > 0) { //verifica se existe algum erro 
+        res.render("admin/addcategorias", { erros: erros })
+    } else {
+        const novaCategoria = { //requisitando os dados da página colocado nos inputs e criando um objeto
+            nome: req.body.nome,
+            slug: req.body.slug
+        }
+        //salvando no banco
+        new Categoria(novaCategoria).save().then(() => {
+            req.flash("success_msg", "Categoria criada com sucesso")
+           res.redirect("/admin/categorias")
+        }).catch((erro) => {
+        req.flash("error_msg", "Houve um erro ao salvar a categoria!")
+            console.log("não foi possível salvar a categoria" + erro)
+        })
+
+    }
+
+
+
+})
 
 router.get('/teste', (req, res) => {
     res.send("Página teste")

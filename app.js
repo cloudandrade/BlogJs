@@ -6,8 +6,26 @@ const mongoose = require("mongoose")
 const app = express()
 const admin = require("./routes/admin.js")
 const path = require("path")
+const session = require("express-session")
+const flash = require("connect-flash") //módulo flash é um tipo de sessão que só aparece 1 vez
 
 //Configurações
+
+        //session
+        app.use(session({ //criando uma chave de seção
+          secret: "cursodenode",
+          resave: true,
+          saveUninitialized: true
+        }))
+        app.use(flash())
+        //midleware
+        app.use((req,res, next) =>{
+
+          //variaveis globais de sucesso e erro  para registrar mensagens
+            res.locals.success_msg = req.flash("success_msg") 
+            res.locals.error_msg = req.flash("error_msg")
+            next()
+          })
 
         //Body parser
         app.use(bodyParser.urlencoded({extended: true}))
@@ -25,6 +43,10 @@ const path = require("path")
         //Public
         app.use(express.static(path.join(__dirname,"public")))//fala pra o app que todos os arquivos estáticos estão na pasta public
 
+        app.use((req,res, next) => {
+          console.log("Testando middleware!")
+          next();
+        })
 
 //Rotas
   app.get('/',(req,res)=>{
