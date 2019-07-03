@@ -9,8 +9,11 @@
             <p>Descrição: {{descricao}}</p>
             <small>Categoria: {{categoria.nome}}</small>
             </br>
-            <small>Data: {{data}}</small>
             
+            <small>Data: {{data}}</small>
+            </br>
+            <a href="/admin/postagens/edit/{{_id}}"><button class="btn btn-warning mt-2">Editar</button> </a>
+             <a href="/admin/postagens/deletar/{{_id}}"><button class="btn btn-danger mt-2">Excluir</button> </a>
 
         </div>
     </div>

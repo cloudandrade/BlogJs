@@ -166,9 +166,61 @@ router.post("/postagens/nova",(req,res) => {
 
 })
 //------------------------------------------------------------------------------------------EDIT-POSTAGEM-----------
+router.get("/postagens/edit/:id", (req,res) => {
 
+    Postagem.findOne({_id: req.params.id}).then((postagem) => {
+
+        Categoria.find().then((categorias) =>{
+            res.render("admin/editpostagens", {categorias: categorias, postagem: postagem})
+        }).catch((erro) => {
+            req.flash("error_msg","Houve um erro ao listar as categorias")
+            console.log("Erro de listagem de categorias, editar postagem: console: "+ erro)
+            res.redirect("/admin/postagens")
+        })
+
+    }).catch((erro) => {
+        req.flash("error_msg", "Houve um erro ao carregar formulário de edição")
+        console.log("Erro de busca em editar categoria: console: " +erro)
+        res.redirect("/admin/postagens")
+    })
+
+    
+})
+//atualizar dados da postagem
+router.post("/postagem/edit", (req,res) => {
+    Postagem.findOne({_id: req.body.id}).then((postagem) => {
+
+        postagem.titulo = req.body.titulo
+        postagem.slug = req.body.slug
+        postagem.descricao = req.body.descricao
+        postagem.conteudo = req.body.conteudo
+        postagem.categoria = req.body.categoria
+
+        postagem.save().then(() => {
+            req.flash("success_msg", "Postagem editada com sucesso!")
+            res.redirect("/admin/postagens")
+        }).catch((erro) => {
+            req.flash("error_msg", "Houve um erro interno ao salvar as modificações")
+            console.log("erro interno edição de postagem: console: "+erro)
+            res.redirect("/admin/postagens")
+        })
+
+    }).catch((erro) => {
+        req.flash("error_msg", "Não foi possivel salvar a postagem editada")
+        console.log("erro de edição da postagem: console: " + erro)
+        res.redirect("/admin/postagens")
+    })
+})
 
 //------------------------------------------------------------------------------------------DELETE-POSTAGEM---------
-
+router.get("/postagens/deletar/:id", (req,res) => {
+    Postagem.remove({_id: req.params.id}).then(() => {
+       req.flash("success_msg", "Postagem Excluida!")
+        res.redirect("/admin/postagens")
+    }).catch((erro) => {
+        req.flash("error_msg", "Houve um erro interno ao excluir")
+        res.redirect("/admin/postagens")
+    })
+})
 //exportando router -  o router será responsavel por administrar nossas rotas
 module.exports = router
