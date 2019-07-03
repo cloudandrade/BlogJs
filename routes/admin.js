@@ -135,7 +135,6 @@ router.get('/postagens/add', (req, res) => {
    
 })
 
-
 //rota para salvamento de postagem
 router.post("/postagens/nova",(req,res) => {
 
@@ -166,6 +165,10 @@ router.post("/postagens/nova",(req,res) => {
     }
 
 })
+//------------------------------------------------------------------------------------------EDIT-POSTAGEM-----------
+
+
+//------------------------------------------------------------------------------------------DELETE-POSTAGEM---------
 
 //exportando router -  o router será responsavel por administrar nossas rotas
 module.exports = router
