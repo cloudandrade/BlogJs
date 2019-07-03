@@ -2,16 +2,17 @@ const express = require('express')
 const router = express.Router();
 const mongoose = require("mongoose")
 require("../models/Categoria")//importando o model para ser usado
-const Categoria = mongoose.model("categorias") //passando o valor do model para uma variavel
+const Categoria = mongoose.model("categorias") //passando o valor do model para uma variavel e relacionando a collection
+require("../models/Postagem")
+const Postagem = mongoose.model("postagens")
 
+//---------------------------------------------------------------------------------ADMIN - HOME ----------------
+//rota para página inicial do admin
 router.get('/', (req, res) => {
     res.render("admin/index")
 })
-
-router.get('/posts', (req, res) => {
-    res.send("Página de postagens")
-})
-
+//--------------------------------------------------------------------------------CATEGORIAS--------------------
+//rota para listagem de categorias, página principal de categorias
 router.get('/categorias', (req, res) => {
     Categoria.find().sort({date:'desc'}).then((categorias) => {
         res.render("admin/categorias", {categorias: categorias})
@@ -21,11 +22,13 @@ router.get('/categorias', (req, res) => {
     })
     
 })
-
+//-------------------------------------------------------------------------------CREATE--CATEGORIA---------------
+//rota para formulário de adicionar uma nova categoria
 router.get('/categorias/add', (req, res) => {
     res.render("admin/addcategorias")
 })
 
+//rota para salvamento de categoria
 router.post('/categorias/nova', (req, res) => {
 
     var erros = []
@@ -59,13 +62,10 @@ router.post('/categorias/nova', (req, res) => {
         req.flash("error_msg", "Houve um erro ao salvar a categoria!")
             console.log("não foi possível salvar a categoria" + erro)
         })
-
     }
-
-
-
 })
-
+//-------------------------------------------------------------------------------EDIT-CATEGORIA-----------------
+//rota para passar a categoria com id para editar
 router.get("/categorias/edit/:id", (req, res) => {
     Categoria.findOne({_id:req.params.id}).then((categoria) => {
         res.render("admin/editcategorias", {categoria: categoria})
@@ -76,6 +76,7 @@ router.get("/categorias/edit/:id", (req, res) => {
    
 })
 
+//rota para alteração de categoria - salvamento
 router.post("/categorias/edit",(req, res) => {
     Categoria.findOne({_id: req.body.id}).then((categoria) => {
         //criar depois validação da edição
@@ -95,8 +96,8 @@ router.post("/categorias/edit",(req, res) => {
     })
 })
 
-
-
+//----------------------------------------------------------------------------------DELETE-CATEGORIA-----------
+//rota para deletar categorias
 router.post("/categorias/deletar", (req, res) => {
     Categoria.remove({_id: req.body.id}).then(() => {
         //criar depois validação da edição
@@ -108,11 +109,22 @@ router.post("/categorias/deletar", (req, res) => {
     })
 })
 
-
+//--------------------------------------------------------------------------------------POSTAGENS--------------------
+//rota para listagem de postagens, página central de postagens
 router.get('/postagens', (req, res) => {
-    res.render("admin/postagens")
-})
 
+    Postagem.find().populate("categoria").sort({data: "desc"}).then((postagens) => { // no populate deve estar o nome do campo
+        res.render("admin/postagens", {postagens: postagens})
+    }).catch((erro) => {
+        req.flash("error_msg", "Houve um erro ao listar as postagens")
+        console.log("erro de listagem: console: " + erro)
+        res.redirect("/admin")
+    })
+
+    
+})
+//----------------------------------------------------------------------------------------CREATE--POSTAGEM----------
+//rota para criação de uma nova postagem
 router.get('/postagens/add', (req, res) => {
     Categoria.find().then((categorias) => {
     res.render("admin/addpostagem", {categorias: categorias})
@@ -123,6 +135,37 @@ router.get('/postagens/add', (req, res) => {
    
 })
 
+
+//rota para salvamento de postagem
+router.post("/postagens/nova",(req,res) => {
+
+    var erros = []
+    if(req.body.categoria == "0" || req.body.categoria == null || req.body.categoria == undefined){
+        erros.push({texto: "Categoria inválida, registre uma categoria"})
+    }
+
+    if(erros.length > 0){
+        res.render("admin/addpostagem", {erros: erros})
+    }else{
+        const novaPostagem = {
+            titulo: req.body.titulo,
+            descricao: req.body.descricao,
+            conteudo: req.body.conteudo,
+            categoria: req.body.categoria,
+            slug: req.body.slug
+        }
+
+        new Postagem(novaPostagem).save().then(() => {
+            req.flash("success_msg", "Postagem criada com sucesso!")
+            res.redirect("/admin/postagens")
+        }).catch((erro) => {
+            req.flash("error_msg", "Houve um erro no salvamento da postagem")
+            console.log("erro de salvamento da postagem: console: " + erro)
+            res.redirect("/admin/postagens")
+        })
+    }
+
+})
 
 //exportando router -  o router será responsavel por administrar nossas rotas
 module.exports = router
