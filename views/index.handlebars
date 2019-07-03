@@ -1,0 +1,25 @@
+<div class="jumbotron">
+  <h1 class="display-5">Bem Vindo ao BlogJS</h1>
+  <p class="lead">Este é um pequeno Blog simples, desenvolvido com Node.js + Express + MongoDB</p>
+  <hr class="my-2">
+  <p>É necessário criar uma conta para testar</p>
+  <a class="btn btn-primary btn-lg" href="#" role="button">Crie uma Conta</a>
+</div>
+<h2>Postagens recentes:</h2>
+
+{{#each postagens}}
+<div class="card mt-2">
+    <div class="card-body">
+        <h3>{{titulo}}</h3>
+        <h5>{{descricao}}</h5>
+        <a href="/postagem/{{slug}}"><button class="btn btn-primary">Leia Mais</button></a>
+        
+        <hr>
+        <small>  Categoria: {{categoria.nome}}</small></br>
+        <small>  Data de publicação: {{data}}</small>
+    </div>
+</div>
+{{else}}
+    <h5>Nenhuma Postagem</h5>
+{{/each}}
+</br>
